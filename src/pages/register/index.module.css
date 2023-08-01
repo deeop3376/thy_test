@@ -1,0 +1,13 @@
+.register-cont{
+    display: flex;
+    justify-content: center;
+
+}
+.register{
+    margin-top: 150px;
+    width: 500px;
+    padding:17px;
+    border:1px solid #eee;
+    border-radius: 10px;
+    padding-top:40px
+}
