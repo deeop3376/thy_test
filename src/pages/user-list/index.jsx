@@ -1,8 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Table, notification } from "antd";
-import { queryList } from "../../service";
+import { Button, Table, notification, Popconfirm } from "antd";
+import { queryList, deleteUser } from "../../service";
 import Update from "./update";
 export default function UserList() {
+  const [pagination,setPagination]=useState({
+    pageSize:3,
+    current:1,
+    total:0
+  })
   const columns = useMemo(
     () => [
       {
@@ -38,7 +43,14 @@ export default function UserList() {
               <Button type="link" onClick={() => handleUpdate(record)}>
                 编辑
               </Button>
-              <Button type="link" onClick={()=>handleDelete(record)}>删除</Button>
+              <Popconfirm
+                okText="确定"
+                cancelText="取消"
+                title="确定删除吗？"
+                onConfirm={() => handleDelete(record)}
+              >
+                <Button type="link">删除</Button>
+              </Popconfirm>
             </>
           );
         },
@@ -50,14 +62,17 @@ export default function UserList() {
   const [loading, setLoading] = useState(false);
   const [nowUsername, setNowUsername] = useState({});
   const [updateVisible, setUpdateVisible] = useState(false);
-  const queryData = useCallback(() => {
+  const queryData = useCallback((page) => {
     setLoading(true);
-    queryList()
+    queryList({
+      pageSize:pagination.pageSize,
+      current:page||pagination.current
+    })
       .then((res) => {
-        console.log('querylist',res)
-        if (Array.isArray(res)) {
-          setList([...res]);
-        }
+        console.log("querylist", res);
+          const {data,total}=res
+          setList([...data]);
+          setPagination(pre=>({...pre,total}))
       })
       .catch((err) => {
         notification.open({
@@ -68,19 +83,46 @@ export default function UserList() {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [pagination]);
   //编辑
   const handleUpdate = (record) => {
     setNowUsername(record.username);
     setUpdateVisible(true);
   };
   //删除
-  const handleDelete=record=>{
-    
-  }
+  const handleDelete = (record) => {
+    setLoading(true);
+    deleteUser({ username: record.username })
+      .then((res) => {
+        refresh();
+        notification.open({
+          type: "success",
+          message: "删除成功",
+        });
+      })
+      .catch((err) => {
+        notification.open({
+          type: "error",
+          message: err,
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
   useEffect(() => {
     queryData();
   }, []);
+  const pageChange=(page,pageSize)=>{
+    console.log('pageee',page)
+    setPagination(pre=>({...pre,current:page}))
+    queryData(page);
+  }
+  const refresh=()=>{
+    
+    setPagination(pre=>({...pre,current:1}))
+    queryData(1)
+  }
   return (
     <>
       <Table
@@ -88,12 +130,18 @@ export default function UserList() {
         loading={loading}
         columns={columns}
         dataSource={list}
+        pagination={{
+          pageSize:pagination.pageSize,
+          current:pagination.current,
+          total:pagination.total,
+          onChange:pageChange
+        }}
       />
       {updateVisible && (
         <Update
           username={nowUsername}
           hanldeClose={() => setUpdateVisible(false)}
-          refreshParent={queryData}
+          refreshParent={refresh}
         />
       )}
     </>

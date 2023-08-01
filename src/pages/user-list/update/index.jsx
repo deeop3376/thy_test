@@ -7,6 +7,7 @@ import {
   notification,
   InputNumber,
   Button,
+  Spin
 } from "antd";
 import { updateUser, queryDetail } from "../../../service";
 export default function Update(props) {
@@ -65,6 +66,7 @@ export default function Update(props) {
   }, []);
   return (
     <Modal open={true} title="修改" width={600} footer={false} onCancel={hanldeClose}>
+      <Spin spinning={loading}>
       <Form
         labelCol={{ span: 5 }}
         wrapperCol={{ span: 19 }}
@@ -96,8 +98,8 @@ export default function Update(props) {
             <Radio value={"女"}>女</Radio>
           </Radio.Group>
         </Form.Item>
-        <Form.Item label="年龄" name="age">
-          <InputNumber min={1} max={200} />
+        <Form.Item label="年龄" name="age" tooltip='范围为1-150'>
+          <InputNumber min={1} max={150} />
         </Form.Item>
 
         <Form.Item label="爱好" name="hobby">
@@ -105,14 +107,15 @@ export default function Update(props) {
         </Form.Item>
 
         <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-          <Button type="primary" htmlType="submit" loading={loading}>
+          <Button type="primary" htmlType="submit" >
             确定
           </Button>
-          <Button style={{marginLeft:'10px'}}>
+          <Button style={{marginLeft:'10px'}} onClick={hanldeClose}>
             取消
           </Button>
         </Form.Item>
       </Form>
+      </Spin>
     </Modal>
   );
 }

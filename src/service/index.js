@@ -12,12 +12,16 @@ const list = [
 
 // 获取用户列表
 export const queryList = (query) => {
-  // const {pageSize=1,pageNo=10}=query;
+  const {pageSize=10,current=1}=query;
+  console.log('queryyy',query)
   return new Promise((resolve, reject) => {
     setTimeout(() => {
-      // resolve(list.slice((pageNo-1)*pageSize,pageSize))
-      resolve(list);
-    }, 2000);
+      // resolve(list.slice((current-1)*pageSize,pageSize))
+      resolve({
+        data:list.slice((current-1)*pageSize,current*pageSize),
+        total:list.length
+      });
+    }, 1000);
   });
 };
 
@@ -32,10 +36,10 @@ export const register = (query) => {
       if (isAlreadyHas) {
         reject("用户已存在");
       } else {
-        list.push(query);
+        list.unshift(query);
         resolve("成功");
       }
-    }, 2000);
+    }, 1000);
   });
 };
 // 查询用户详情
