@@ -3,11 +3,11 @@ import { Button, Table, notification, Popconfirm } from "antd";
 import { queryList, deleteUser } from "../../service";
 import Update from "./update";
 export default function UserList() {
-  const [pagination,setPagination]=useState({
-    pageSize:3,
-    current:1,
-    total:0
-  })
+  const [pagination, setPagination] = useState({
+    pageSize: 3,
+    current: 1,
+    total: 0,
+  });
   const columns = useMemo(
     () => [
       {
@@ -62,28 +62,31 @@ export default function UserList() {
   const [loading, setLoading] = useState(false);
   const [nowUsername, setNowUsername] = useState({});
   const [updateVisible, setUpdateVisible] = useState(false);
-  const queryData = useCallback((page) => {
-    setLoading(true);
-    queryList({
-      pageSize:pagination.pageSize,
-      current:page||pagination.current
-    })
-      .then((res) => {
-        console.log("querylist", res);
-          const {data,total}=res
-          setList([...data]);
-          setPagination(pre=>({...pre,total}))
+  //请求列表方法
+  const queryData = useCallback(
+    (page) => {
+      setLoading(true);
+      queryList({
+        pageSize: pagination.pageSize,
+        current: page || pagination.current,
       })
-      .catch((err) => {
-        notification.open({
-          type: "error",
-          message: err,
+        .then((res) => {
+          const { data, total } = res;
+          data && setList([...data]);
+          setPagination((pre) => ({ ...pre, total }));
+        })
+        .catch((err) => {
+          notification.open({
+            type: "error",
+            message: err || "系统繁忙",
+          });
+        })
+        .finally(() => {
+          setLoading(false);
         });
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [pagination]);
+    },
+    [pagination]
+  );
   //编辑
   const handleUpdate = (record) => {
     setNowUsername(record.username);
@@ -103,26 +106,28 @@ export default function UserList() {
       .catch((err) => {
         notification.open({
           type: "error",
-          message: err,
+          message: err || "系统繁忙",
         });
       })
       .finally(() => {
         setLoading(false);
       });
   };
+  //初始化请求列表
   useEffect(() => {
     queryData();
   }, []);
-  const pageChange=(page,pageSize)=>{
-    console.log('pageee',page)
-    setPagination(pre=>({...pre,current:page}))
+  // 页码改变回调
+  const pageChange = useCallback((page, pageSize) => {
+    console.log("pageee", page);
+    setPagination((pre) => ({ ...pre, current: page }));
     queryData(page);
-  }
-  const refresh=()=>{
-    
-    setPagination(pre=>({...pre,current:1}))
-    queryData(1)
-  }
+  },[]);
+  //重置分页数据，刷新列表页
+  const refresh = () => {
+    setPagination((pre) => ({ ...pre, current: 1 }));
+    queryData(1);
+  };
   return (
     <>
       <Table
@@ -131,10 +136,10 @@ export default function UserList() {
         columns={columns}
         dataSource={list}
         pagination={{
-          pageSize:pagination.pageSize,
-          current:pagination.current,
-          total:pagination.total,
-          onChange:pageChange
+          pageSize: pagination.pageSize,
+          current: pagination.current,
+          total: pagination.total,
+          onChange: pageChange,
         }}
       />
       {updateVisible && (

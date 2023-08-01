@@ -40,7 +40,7 @@ const Register = () => {
       .catch((err) => {
         notification.open({
           type: "error",
-          message: err,
+          message: err || "系统繁忙",
         });
       })
       .finally(() => {
